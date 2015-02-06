@@ -1,14 +1,11 @@
 package troy
 
-import (
-	"github.com/ironbay/troy/cassandra"
-)
+import ()
 
 var store Store
 
-func init() {
-	store = new(cassandra.Store)
-	store.Create()
+func Init(s Store) {
+	store = s
 }
 
 func Get(start string) *Query {
