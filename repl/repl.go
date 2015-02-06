@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/ironbay/troy"
-	"github.com/ironbay/troy/cassandra"
+	"github.com/ironbay/troy/store/cassandra"
 	"log"
 )
 
