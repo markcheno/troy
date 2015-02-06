@@ -1,0 +1,128 @@
+package main
+
+import (
+	"github.com/ironbay/troy"
+	//"github.com/ironbay/troy/store/cassandra"
+	"fmt"
+	"github.com/ironbay/troy/store/memory"
+	"github.com/peterh/liner"
+	"github.com/robertkrimen/otto"
+)
+
+var (
+	history_fn = "/tmp/.liner_history"
+)
+
+func main() {
+	/*
+		var store cassandra.Store
+		store.Create("localhost", "troy")
+		troy.Init(&store)
+	*/
+
+	var store memory.Store
+	store.Create()
+	troy.Init(&store)
+
+	troy.Update("darth-maul").Out("killed").V("quigon").Out("taught").V("obiwan").Out("taught").V("anakin").Exec()
+	troy.Update("obiwan").Out("killed").V("darth-maul").Exec()
+	troy.Update("obiwan").Out("taught").V("luke").Exec()
+	troy.Update("emperor").Out("taught").V("darth-maul").Exec()
+
+	line := liner.NewLiner()
+	defer line.Close()
+
+	vm := otto.New()
+	vm.Set("getExec", func(call otto.FunctionCall) otto.Value {
+		export, _ := call.Argument(0).Export()
+		instructions := export.([]interface{})
+		var query *troy.Query
+		for _, n := range instructions {
+
+			args := n.([]interface{})
+			if args[0] == "start" {
+				query = troy.Get(args[1].(string))
+				continue
+			}
+			if args[0] == "v" {
+				query.V(args[1].(string))
+				continue
+			}
+			if args[0] == "out" {
+				query.Out(args[1].(string))
+				continue
+			}
+			if args[0] == "all" {
+				query.All()
+				continue
+			}
+		}
+		v, _ := vm.ToValue(query.Vertices)
+		return v
+	})
+
+	vm.Set("updateExec", func(call otto.FunctionCall) otto.Value {
+		start, _ := call.ArgumentList[0].ToString()
+		write := troy.Update(start)
+		for i, a := range call.ArgumentList {
+			if i == 0 {
+				continue
+			}
+			val, _ := a.ToString()
+			write.Out(val)
+		}
+		write.Exec()
+		v, _ := vm.ToValue(true)
+		return v
+	})
+
+	vm.Run(`
+		var get = function(start) {
+			var instructions = []
+			instructions.push(["start", start])
+			return {
+				v : function(v) {
+					instructions.push(["v", v])
+					return this;
+				},
+				all : function() {
+					instructions.push(["all"])
+					return this;
+				},
+				out : function(p) {
+					instructions.push(["out", p])
+					return this;
+				},
+				exec : function() {
+					return getExec(instructions);
+				}
+			}
+		}
+
+		var update = function(start) {
+			var instructions = [start];
+			var f = function(v) {
+				instructions.push(v);
+				return r;
+			}
+			var r = {
+				v : f,
+				out : f,
+				exec : function() {
+					return updateExec(instructions)
+				}
+			}
+			return r;
+		}
+	`)
+
+	for {
+		l, err := line.Prompt("troy> ")
+		if err != nil {
+			break
+		}
+		value, _ := vm.Run(l)
+		fmt.Println(value)
+	}
+
+}
