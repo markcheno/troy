@@ -14,7 +14,8 @@ func init() {
 func Get(start string) *Query {
 	q := new(Query)
 	q.Store = store
-	return q.V(start)
+	q.Vertices = []string{start}
+	return q
 }
 
 func Update(start string) *Write {

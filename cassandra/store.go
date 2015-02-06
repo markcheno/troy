@@ -45,3 +45,11 @@ func (*Store) Update(subject string, predicate string, object string) {
 		panic(err)
 	}
 }
+
+func (*Store) Exists(subject string, predicate string, object string) bool {
+	m, err := cassandra.Query("SELECT * FROM troy.triples WHERE object = ? AND subject = ? AND predicate = ?", object, subject, predicate).Iter().SliceMap()
+	if err != nil {
+		panic(err)
+	}
+	return len(m) > 0
+}
