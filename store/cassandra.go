@@ -51,10 +51,6 @@ func (*Cassandra) Subjects(object string, predicate string) []string {
 	return result
 }
 
-func (*Cassandra) Triples(subject string) (string, string, string) {
-	return "subject", "predicate", "object"
-}
-
 func (*Cassandra) Update(subject string, predicate string, object string) {
 	err := cassandra.Query("UPDATE subjects SET updated = dateof(now()) WHERE object = ? AND subject = ? AND predicate = ?", object, subject, predicate).Exec()
 	err = cassandra.Query("UPDATE objects SET updated = dateof(now()) WHERE object = ? AND subject = ? AND predicate = ?", object, subject, predicate).Exec()

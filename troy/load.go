@@ -35,4 +35,5 @@ func load(path *string) {
 		wg.Done()
 	}
 	wg.Wait()
+	repl()
 }

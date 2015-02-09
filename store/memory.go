@@ -5,40 +5,51 @@ import (
 )
 
 type Memory struct {
+	subjects Cache
+	objects  Cache
 }
 
-var cache map[string]map[string]map[string]bool
+type Cache map[string]map[string]map[string]bool
 
 func (s *Memory) Create() {
-	cache = make(map[string]map[string]map[string]bool)
+	s.subjects = Cache{}
+	s.objects = Cache{}
 }
 
 func (s *Memory) Objects(subject string, predicate string) []string {
 	var result []string
-	for k := range cache[subject][predicate] {
+	for k := range s.subjects[subject][predicate] {
 		result = append(result, k)
 	}
 	return result
 }
 
-func (s *Memory) Triples(subject string) (string, string, string) {
-	return "", "", ""
+func (s *Memory) Subjects(object string, predicate string) []string {
+	var result []string
+	for k := range s.objects[object][predicate] {
+		result = append(result, k)
+	}
+	return result
 }
 
-func (*Memory) Update(subject string, predicate string, object string) {
-	_, ok := cache[subject]
-	if !ok {
-		cache[subject] = make(map[string]map[string]bool)
-	}
-	_, ok = cache[subject][predicate]
-	if !ok {
-		o := make(map[string]bool)
-		cache[subject][predicate] = o
-	}
-	cache[subject][predicate][object] = true
+func (s *Memory) Update(subject string, predicate string, object string) {
+	s.updateCache(s.subjects, subject, predicate, object)
+	s.updateCache(s.objects, object, predicate, subject)
 }
 
-func (*Memory) Exists(subject string, predicate string, object string) bool {
-	_, ok := cache[subject][predicate][object]
+func (*Memory) updateCache(cache Cache, first string, second string, third string) {
+	_, ok := cache[first]
+	if !ok {
+		cache[first] = make(map[string]map[string]bool)
+	}
+	_, ok = cache[first][second]
+	if !ok {
+		cache[first][second] = make(map[string]bool)
+	}
+	cache[first][second][third] = true
+}
+
+func (s *Memory) Exists(subject string, predicate string, object string) bool {
+	_, ok := s.subjects[subject][predicate][object]
 	return ok
 }
