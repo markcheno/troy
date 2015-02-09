@@ -18,5 +18,7 @@ func web() {
 		json, _ := json.Marshal(obj)
 		w.Write(json)
 	})
-	http.ListenAndServe(":9876", nil)
+	port := ":9876"
+	log.Println("Listening on", port)
+	http.ListenAndServe(port, nil)
 }
