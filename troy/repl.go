@@ -5,6 +5,9 @@ import (
 	"github.com/ironbay/troy"
 	"github.com/peterh/liner"
 	"github.com/robertkrimen/otto"
+	"log"
+	"os"
+	"time"
 )
 
 func repl() {
@@ -17,6 +20,7 @@ func repl() {
 		export, _ := call.Argument(0).Export()
 		instructions := export.([]interface{})
 		var query *troy.Query
+		start := time.Now()
 		for _, n := range instructions {
 
 			args := n.([]interface{})
@@ -41,6 +45,8 @@ func repl() {
 				continue
 			}
 		}
+		elapsed := time.Since(start)
+		fmt.Println(elapsed)
 		v, _ := vm.ToValue(query.Result)
 		return v
 	})
@@ -100,14 +106,27 @@ func repl() {
                 return r;
             }
         `)
+	history := "/tmp/.troy"
+	if f, err := os.Open(history); err == nil {
+		line.ReadHistory(f)
+		f.Close()
+	}
 
 	for {
 		l, err := line.Prompt("troy> ")
-		if err != nil {
+		if err != nil || l == "exit" || l == "quit" {
 			break
 		}
+		line.AppendHistory(l)
 		value, _ := vm.Run(l)
 		fmt.Println(value)
+	}
+
+	if f, err := os.Create(history); err != nil {
+		log.Print("Error writing history file: ", err)
+	} else {
+		line.WriteHistory(f)
+		f.Close()
 	}
 
 }
