@@ -1,10 +1,9 @@
 package main
 
 import (
-	"github.com/ironbay/troy"
-	//"github.com/ironbay/troy/store/cassandra"
 	"fmt"
-	"github.com/ironbay/troy/store/memory"
+	"github.com/ironbay/troy"
+	"github.com/ironbay/troy/store"
 	"github.com/peterh/liner"
 	"github.com/robertkrimen/otto"
 )
@@ -20,7 +19,7 @@ func main() {
 		troy.Init(&store)
 	*/
 
-	var store memory.Store
+	var store store.Memory
 	store.Create()
 	troy.Init(&store)
 

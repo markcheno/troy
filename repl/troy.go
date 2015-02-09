@@ -71,6 +71,7 @@ func main() {
 			val, _ := a.ToString()
 			write.Out(val)
 		}
+		fmt.Println(write)
 		write.Exec()
 		v, _ := vm.ToValue(true)
 		return v
@@ -101,13 +102,15 @@ func main() {
 
 		var update = function(start) {
 			var instructions = [start];
-			var f = function(v) {
-				instructions.push(v);
-				return r;
-			}
 			var r = {
-				v : f,
-				out : f,
+				v : function(v){
+					instructions.push(v);
+					return this
+				},
+				out : function(p){
+					instructions.push(p);
+					return this
+				},
 				exec : function() {
 					return updateExec(instructions)
 				}

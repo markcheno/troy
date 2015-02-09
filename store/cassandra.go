@@ -1,4 +1,4 @@
-package cassandra
+package store
 
 import (
 	"github.com/gocql/gocql"
@@ -6,9 +6,9 @@ import (
 
 var cassandra *gocql.Session
 
-type Store struct{}
+type Cassandra struct{}
 
-func (*Store) Create(host string, keyspace string) {
+func (*Cassandra) Create(host string, keyspace string) {
 	cluster := gocql.NewCluster("localhost")
 	cluster.Keyspace = keyspace
 	var err error
@@ -22,7 +22,7 @@ func (*Store) Create(host string, keyspace string) {
 	}
 }
 
-func (*Store) Objects(subject string, predicate string) []string {
+func (*Cassandra) Objects(subject string, predicate string) []string {
 	i := cassandra.Query("SELECT object FROM triples WHERE subject = ? AND predicate = ?", subject, predicate).Iter()
 	result := make([]string, 0)
 	var object string
@@ -36,18 +36,18 @@ func (*Store) Objects(subject string, predicate string) []string {
 	return result
 }
 
-func (*Store) Triples(subject string) (string, string, string) {
+func (*Cassandra) Triples(subject string) (string, string, string) {
 	return "subject", "predicate", "object"
 }
 
-func (*Store) Update(subject string, predicate string, object string) {
+func (*Cassandra) Update(subject string, predicate string, object string) {
 	err := cassandra.Query("UPDATE triples SET updated = dateof(now()) WHERE object = ? AND subject = ? AND predicate = ?", object, subject, predicate).Exec()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (*Store) Exists(subject string, predicate string, object string) bool {
+func (*Cassandra) Exists(subject string, predicate string, object string) bool {
 	m, err := cassandra.Query("SELECT * FROM triples WHERE object = ? AND subject = ? AND predicate = ?", object, subject, predicate).Iter().SliceMap()
 	if err != nil {
 		panic(err)
