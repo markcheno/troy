@@ -18,7 +18,6 @@ func main() {
 		store.Create("localhost", "troy")
 		troy.Init(&store)
 	*/
-
 	var store store.Memory
 	store.Create()
 	troy.Init(&store)
@@ -61,14 +60,14 @@ func main() {
 	})
 
 	vm.Set("updateExec", func(call otto.FunctionCall) otto.Value {
-		start, _ := call.ArgumentList[0].ToString()
-		write := troy.Update(start)
-		for i, a := range call.ArgumentList {
+		export, _ := call.Argument(0).Export()
+		instructions := export.([]interface{})
+		write := troy.Update(instructions[0].(string))
+		for i, a := range instructions {
 			if i == 0 {
 				continue
 			}
-			val, _ := a.ToString()
-			write.Out(val)
+			write = write.Out(a.(string))
 		}
 		write.Exec()
 		v, _ := vm.ToValue(true)

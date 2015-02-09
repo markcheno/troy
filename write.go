@@ -5,32 +5,32 @@ import (
 )
 
 type Write struct {
-	queue []string
+	Queue []string
 	Store Store
 }
 
 func (w *Write) V(value string) *Write {
-	w.queue = append(w.queue, value)
+	w.Queue = append(w.Queue, value)
 	return w
 }
 
 func (w *Write) Out(predicate string) *Write {
-	w.queue = append(w.queue, predicate)
+	w.Queue = append(w.Queue, predicate)
 	return w
 }
 
 func (w *Write) Exec() {
 	var wg sync.WaitGroup
-	for i := 0; i < len(w.queue); i += 2 {
+	for i := 0; i < len(w.Queue); i += 2 {
 		wg.Add(1)
 		go func(n int) {
 			defer wg.Done()
-			if n+3 > len(w.queue) {
+			if n+2 >= len(w.Queue) {
 				return
 			}
-			subject := w.queue[n]
-			predicate := w.queue[n+1]
-			object := w.queue[n+2]
+			subject := w.Queue[n]
+			predicate := w.Queue[n+1]
+			object := w.Queue[n+2]
 			w.Store.Update(subject, predicate, object)
 		}(i)
 	}

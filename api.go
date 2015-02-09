@@ -17,6 +17,7 @@ func Get(start string) *Query {
 
 func Update(start string) *Write {
 	q := new(Write)
+	q.Queue = []string{start}
 	q.Store = store
-	return q.V(start)
+	return q
 }
