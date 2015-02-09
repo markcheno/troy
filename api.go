@@ -8,10 +8,10 @@ func Init(s Store) {
 	store = s
 }
 
-func V(start string) *Query {
+func V(start ...string) *Query {
 	q := new(Query)
 	q.Store = store
-	q.Result = []string{start}
+	q.Result = start
 	return q
 }
 

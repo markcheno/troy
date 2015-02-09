@@ -21,7 +21,11 @@ func repl() {
 
 			args := n.([]interface{})
 			if args[0] == "start" {
-				query = troy.V(args[1].(string))
+				arr := []string{}
+				for _, s := range args[1].([]interface{}) {
+					arr = append(arr, s.(string))
+				}
+				query = troy.V(arr...)
 				continue
 			}
 			if args[0] == "has" {
@@ -58,9 +62,9 @@ func repl() {
 
 	vm.Run(`
             var g = {}
-            g.v = function(start) {
+            g.v = function() {
                 var instructions = []
-                instructions.push(["start", start])
+                instructions.push(["start", Array.prototype.slice.call(arguments)])
                 return {
                     all : function() {
                         return getExec(instructions);
