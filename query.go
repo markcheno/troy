@@ -36,6 +36,14 @@ func (q *Query) In(predicate string) *Query {
 	return q
 }
 
+func (q *Query) Group() map[string]int {
+	result := map[string]int{}
+	for _, vertex := range q.Result {
+		result[vertex]++
+	}
+	return result
+}
+
 func (q *Query) edge(predicate string, direction func(string, string) []string) []string {
 	output := make(chan string)
 	var wg sync.WaitGroup

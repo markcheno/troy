@@ -1,0 +1,12 @@
+anakin,killed,mace-windu
+emperor,killed,mace-windu
+emperor,killed,anakin
+obi-wan,taught,anakin
+qui-gon,taught,obi-wan
+emperor,taught,anakin
+obi-wan,killed,darth-maul
+darth-maul,killed,qui-gon
+obi-wan,taught,luke
+yoda,taught,luke
+emperor,killed,anakin
+vader,killed,obiwan

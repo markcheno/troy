@@ -10,6 +10,9 @@ import (
 var (
 	app     = kingpin.New("troy", "Triple store")
 	replCmd = app.Command("repl", "Command line interface for debugging")
+
+	loadCmd  = app.Command("load", "Command line interface for debugging")
+	loadFile = loadCmd.Arg("file", "Input csv file").Required().String()
 )
 
 func main() {
@@ -17,14 +20,11 @@ func main() {
 	store.Create("localhost", "troy")
 	troy.Init(&store)
 
-	troy.Update("darth-maul").Out("killed").V("quigon").Out("taught").V("obiwan").Out("taught").V("anakin").Exec()
-	troy.Update("obiwan").Out("killed").V("darth-maul").Exec()
-	troy.Update("obiwan").Out("taught").V("luke").Exec()
-	troy.Update("emperor").Out("taught").V("darth-maul").Exec()
-
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case replCmd.FullCommand():
 		repl()
+	case loadCmd.FullCommand():
+		load(loadFile)
 	}
 
 }

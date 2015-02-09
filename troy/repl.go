@@ -21,6 +21,10 @@ func repl() {
 		instructions := export.([]interface{})
 		var query *troy.Query
 		start := time.Now()
+		defer func() {
+			elapsed := time.Since(start)
+			fmt.Println(elapsed)
+		}()
 		for _, n := range instructions {
 
 			args := n.([]interface{})
@@ -44,9 +48,12 @@ func repl() {
 				query.In(args[1].(string))
 				continue
 			}
+			if args[0] == "group" {
+				v, _ := vm.ToValue(query.Group())
+				return v
+
+			}
 		}
-		elapsed := time.Since(start)
-		fmt.Println(elapsed)
 		v, _ := vm.ToValue(query.Result)
 		return v
 	})
@@ -72,9 +79,6 @@ func repl() {
                 var instructions = []
                 instructions.push(["start", Array.prototype.slice.call(arguments)])
                 return {
-                    all : function() {
-                        return getExec(instructions);
-                    },
                     out : function(p) {
                         instructions.push(["out", p])
                         return this;
@@ -86,7 +90,14 @@ func repl() {
                     has : function(p, o) {
                         instructions.push(["has", p, o])
                         return this
-                    }
+                    },
+                    all : function() {
+                        return getExec(instructions);
+                    },
+					group : function() {
+                        instructions.push(["group"])
+						return getExec(instructions)
+					}
                 }
             }
 
@@ -119,7 +130,10 @@ func repl() {
 		}
 		line.AppendHistory(l)
 		value, _ := vm.Run(l)
-		fmt.Println(value)
+		if value != otto.UndefinedValue() {
+			exp, _ := value.Export()
+			fmt.Println(exp)
+		}
 	}
 
 	if f, err := os.Create(history); err != nil {
