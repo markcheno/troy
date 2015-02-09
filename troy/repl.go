@@ -128,6 +128,9 @@ func repl() {
 		if err != nil || l == "exit" || l == "quit" {
 			break
 		}
+		if l == "" {
+			continue
+		}
 		line.AppendHistory(l)
 		value, _ := vm.Run(l)
 		if value != otto.UndefinedValue() {
