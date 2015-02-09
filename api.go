@@ -8,10 +8,10 @@ func Init(s Store) {
 	store = s
 }
 
-func Get(start string) *Query {
+func V(start string) *Query {
 	q := new(Query)
 	q.Store = store
-	q.Vertices = []string{start}
+	q.Result = []string{start}
 	return q
 }
 

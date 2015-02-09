@@ -5,50 +5,56 @@ import (
 )
 
 type Query struct {
-	Vertices  []string
-	predicate string
-	Store     Store
+	Store        Store
+	Instructions []Traversal
+	Result       []string
 }
 
-func (q *Query) All() *Query {
+type Traversal struct {
+	Type  string
+	Value string
+}
+
+func (q *Query) Has(predicate string, object string) *Query {
+	valid := []string{}
+	for _, vertex := range q.Result {
+		if q.Store.Exists(vertex, predicate, object) {
+			valid = append(valid, vertex)
+		}
+	}
+	q.Result = valid
+	return q
+}
+
+func (q *Query) Out(predicate string) *Query {
+	q.edge(predicate, q.Store.Objects)
+	return q
+}
+
+func (q *Query) In(predicate string) *Query {
+	q.edge(predicate, q.Store.Subjects)
+	return q
+}
+
+func (q *Query) edge(predicate string, direction func(string, string) []string) []string {
 	output := make(chan string)
 	var wg sync.WaitGroup
-	for _, vertex := range q.Vertices {
+	for _, vertex := range q.Result {
 		wg.Add(1)
-		go func(subject string, predicate string) {
-			for _, n := range q.Store.Objects(subject, predicate) {
+		go func(subject string) {
+			for _, n := range direction(subject, predicate) {
 				output <- n
 			}
 			wg.Done()
-		}(vertex, q.predicate)
+		}(vertex)
 	}
 	go func() {
 		wg.Wait()
 		close(output)
 	}()
-	q.Vertices = make([]string, 0)
+	q.Result = make([]string, 0)
 	for n := range output {
-		q.Vertices = append(q.Vertices, n)
+		q.Result = append(q.Result, n)
 	}
-	return q
-}
-
-func (q *Query) V(end string) *Query {
-	success := true
-	for _, vertex := range q.Vertices {
-		if !q.Store.Exists(vertex, q.predicate, end) {
-			success = false
-			break
-		}
-	}
-	q.Vertices = make([]string, 0)
-	if success {
-		q.Vertices = append(q.Vertices, end)
-	}
-	return q
-}
-
-func (q *Query) Out(predicate string) *Query {
-	q.predicate = predicate
-	return q
+	return q.Result
 }

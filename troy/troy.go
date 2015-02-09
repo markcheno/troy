@@ -13,8 +13,8 @@ var (
 )
 
 func main() {
-	var store store.Memory
-	store.Create()
+	var store store.Cassandra
+	store.Create("localhost", "troy")
 	troy.Init(&store)
 
 	troy.Update("darth-maul").Out("killed").V("quigon").Out("taught").V("obiwan").Out("taught").V("anakin").Exec()

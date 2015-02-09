@@ -21,23 +21,23 @@ func repl() {
 
 			args := n.([]interface{})
 			if args[0] == "start" {
-				query = troy.Get(args[1].(string))
+				query = troy.V(args[1].(string))
 				continue
 			}
-			if args[0] == "v" {
-				query.V(args[1].(string))
+			if args[0] == "has" {
+				query.Has(args[1].(string), args[2].(string))
 				continue
 			}
 			if args[0] == "out" {
 				query.Out(args[1].(string))
 				continue
 			}
-			if args[0] == "all" {
-				query.All()
+			if args[0] == "in" {
+				query.In(args[1].(string))
 				continue
 			}
 		}
-		v, _ := vm.ToValue(query.Vertices)
+		v, _ := vm.ToValue(query.Result)
 		return v
 	})
 
@@ -57,29 +57,30 @@ func repl() {
 	})
 
 	vm.Run(`
-            var get = function(start) {
+            var g = {}
+            g.v = function(start) {
                 var instructions = []
                 instructions.push(["start", start])
                 return {
-                    v : function(v) {
-                        instructions.push(["v", v])
-                        return this;
-                    },
                     all : function() {
-                        instructions.push(["all"])
-                        return this;
+                        return getExec(instructions);
                     },
                     out : function(p) {
                         instructions.push(["out", p])
                         return this;
                     },
-                    exec : function() {
-                        return getExec(instructions);
+                    in: function(p) {
+                        instructions.push(["in", p])
+                        return this;
+                    },
+                    has : function(p, o) {
+                        instructions.push(["has", p, o])
+                        return this
                     }
                 }
             }
 
-            var update = function(start) {
+            g.update = function(start) {
                 var instructions = [start];
                 var f = function(v) {
                     instructions.push(v);
